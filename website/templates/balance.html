@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Premium Products{% endblock title %}
+
+{% block content %}
+
+<ul class="nav nav-tabs">
+    <li class="nav-item">
+        <a class="nav-link" aria-current="page" href="{% url 'premium_products' account_id %}">Transactions</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link active" href='#'>Balance </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'account_details' account_id %}">Account Details </a>
+    </li>
+</ul><br>
+<div class='tab-content'>
+    <div id='premium_products'>
+        <table id='datatable_balance' style="width: 100% !important">
+            <thead>
+                <tr>
+                    <th>Balance</th>
+                    <th>Type</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody> 
+                {%for balance in balances%}
+                    <tr>    
+                        <td>{{balance.balanceAmount.amount}}</td>
+                        <td>{{balance.balanceType}}</td>
+                        <td>{{balance.referenceDate}}</td>
+                    </tr>
+                {%endfor%}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock content %}

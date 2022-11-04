@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Accounts{% endblock title %}
+
+{% block content %}
+    <div id='account_table'>
+        <table id='datatable_accounts' style="width: 100% !important">
+            <thead>
+                <tr>
+                    <th>Accounts</th>
+                </tr>
+            </thead>
+            <tbody>
+                {%for account in results.accounts%}
+                    <tr>    
+                        <td><a href="{% url 'premium_products' account %}" style="text-decoration: none"> {{account}} </a></td>
+                    </tr>
+                {%endfor%}             
+            </tbody>
+        </table>
+    </div>
+{% endblock content %}

@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Premium Products{% endblock title %}
+
+{% block content %}
+
+<ul class="nav nav-tabs">
+    <li class="nav-item">
+        <a class="nav-link active" aria-current="page" href='#'>Transactions</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{%url 'balance' account_id %}">Balance </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'account_details' account_id %}">Account Details </a>
+    </li>
+</ul><br>
+<div class='tab-content'>
+    <div id='premium_products'>
+        <table id='datatable_transactions' style="width: 100% !important">
+            <thead>
+                <tr>
+                    <th>Booking Date</th>
+                    <th>Amount</th>
+                    <th>Place</th>
+                    <th>Cathegory Code</th>
+                </tr>
+            </thead>
+            <tbody>
+                {%for transaction in transactions.booked%}
+                    <tr>    
+                        <td>{{transaction.bookingDate}}</td>
+                        <td>{{transaction.transactionAmount.amount}}</td>
+                        <td>{{transaction.remittanceInformationUnstructured}}</td>
+                        <td>{{transaction.merchantCategoryCode}}</td>
+                    </tr>
+                {%endfor%}
+                
+                {% comment %} {%for transaction in balances%}
+                    <tr>    
+                        <td>{{transaction}}</td>
+                    </tr>
+                {%endfor%} {% endcomment %}
+                {% comment %} {%for transaction in account%}
+                    <tr>    
+                        <td>{{transaction}}</td>
+                    </tr>
+                {%endfor%} {% endcomment %}
+
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock content %}
