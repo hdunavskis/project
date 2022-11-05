@@ -13,7 +13,7 @@
             <tbody>
                 {%for account in results.accounts%}
                     <tr>    
-                        <td><a href="{% url 'premium_products' account %}" style="text-decoration: none"> {{account}} </a></td>
+                        <td><a href="{% url 'transactions' account %}" style="text-decoration: none"> Account - {{forloop.counter}} </a></td>
                     </tr>
                 {%endfor%}             
             </tbody>

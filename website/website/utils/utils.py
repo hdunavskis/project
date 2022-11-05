@@ -1,10 +1,19 @@
+from __future__ import absolute_import, unicode_literals
 from enum import Enum
 from typing import List
+import os
 from requests.models import HTTPError
 from django.http import Http404
 from nordigen import NordigenClient
 from nordigen.api import AccountApi
 from nordigen.types.types import Requisition, Institutions
+from celery import Celery
+
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'website.settings')
+app = Celery('website', backend='redis://localhost:6379')
+app.config_from_object('django.conf:settings', namespace='CELERY')
+app.autodiscover_tasks()
 
 
 class URI(Enum):
@@ -40,7 +49,7 @@ def get_institute(client:NordigenClient, institute_id:str) -> Institutions:
     try:
         institute = client.institution.get_institution_by_id(institute_id)
     except HTTPError as response:
-        raise Http404('Institution not found') from response
+        raise Http404('Institution not found!') from response
         #log error
     return institute
 
@@ -50,36 +59,39 @@ def get_institutions(client:NordigenClient) -> List[Institutions]:
     try:
         institutions = client.institution.get_institutions()
     except HTTPError as response:
-        raise Http404('Institution not found') from response
+        raise Http404('Institution not found!') from response
         #log error
     return institutions
 
-#celery
+
+@app.task
 def get_tranactions(account_api: AccountApi) -> dict:
     transactions = None
     try:
         transactions = account_api.get_transactions()
     except HTTPError as response:
-        raise Http404('Could not get transactions') from response
+        raise Http404('Could not get transactions!') from response
         #log error
     return transactions
 
-#celery
+
+@app.task
 def get_balance(account_api: AccountApi) -> dict:
     balances = None
     try:
         balances = account_api.get_balances()
     except HTTPError as response:
-        raise Http404('Could not get account balances') from response
+        raise Http404('Could not get account balances!') from response
         #log error
     return balances
 
-#celery
+
+@app.task
 def get_account_details(account_api: AccountApi) -> dict:
     account_details = None
     try:
         account_details = account_api.get_details()
     except HTTPError as response:
-        raise Http404('Could not get account details') from response
+        raise Http404('Could not get account details!') from response
         #log error
     return account_details

@@ -16,7 +16,7 @@
     </li>
 </ul><br>
 <div class='tab-content'>
-    <div id='premium_products'>
+    <div id='transactions'>
         <table id='datatable_transactions' style="width: 100% !important">
             <thead>
                 <tr>
@@ -35,18 +35,6 @@
                         <td>{{transaction.merchantCategoryCode}}</td>
                     </tr>
                 {%endfor%}
-                
-                {% comment %} {%for transaction in balances%}
-                    <tr>    
-                        <td>{{transaction}}</td>
-                    </tr>
-                {%endfor%} {% endcomment %}
-                {% comment %} {%for transaction in account%}
-                    <tr>    
-                        <td>{{transaction}}</td>
-                    </tr>
-                {%endfor%} {% endcomment %}
-
             </tbody>
         </table>
     </div>

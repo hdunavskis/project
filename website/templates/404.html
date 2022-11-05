@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
-{% block title %}404{% endblock title %}404
+{% block title %}404{% endblock title %}
 {% block content %}
     <h2>Default Error page!</h1>
-        <p>{{error}}</p>
+        <p>{{error}}</p><br>
+        <p>{{error_args}}</p>
 {% endblock content %}

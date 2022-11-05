@@ -1,12 +1,18 @@
 from django.shortcuts import render, redirect
 from django.http import Http404
 from django.views.decorators.http import require_http_methods
+from django.core.cache import cache
 from website.NordClient import ClientSingleton
 from website.utils import utils
 
 
 @require_http_methods(['GET'])
 def index(request):
+    """
+    Index page
+    Returns:
+        dict: All institutions
+    """
     context={}
     client = ClientSingleton().client
     context["institutions"] = utils.get_institutions(client)
@@ -26,6 +32,16 @@ def requisition_create(request, institute_id):
 
 @require_http_methods(['GET'])
 def authenticated(request, requisition_id=''):
+    """Page user is redirected after authentication.
+        If authentication was successfull, premium products
+        (transactions, accounts, balances) are gathered async.
+        Else http404 is raised
+
+        Parameters:
+            requisition_id (str): Optional
+        Returns:
+            dict: Of available accounts
+    """
     context = {}
     client = ClientSingleton().client
 
@@ -35,57 +51,97 @@ def authenticated(request, requisition_id=''):
     if hasattr(client, 'requisition_id') and not client.requisition_id:
         raise Http404('Requisition id is not set!')
 
-    context['results'] = utils.get_accounts(client)
+    accounts = utils.get_accounts(client)
+    if accounts.get('status') != 'LN':
+        raise Http404('No accounts found! Authentication failed.')
 
+    for account in accounts.get('accounts'):
+        t_key = str(account) + 'transactions'
+        b_key = str(account) + 'balance'
+        a_key = str(account) + 'account'
+        account_api = client.account_api(account)
+        try:
+            transactions_results = utils.get_tranactions.apply_async(args=[account_api]).get()
+            balance_results = utils.get_balance.apply_async(args=[account_api]).get()
+            accounts_results = utils.get_account_details.apply_async(args=[account_api]).get()
+        except Exception as exc:
+            raise Http404('Error gathering premiums!') from exc
+        cache.set_many({t_key:transactions_results, b_key:balance_results,
+                        a_key:accounts_results}, timeout=900)
+
+    context['results'] = accounts
     return render(request, 'authenticated.html', context)
 
 
 @require_http_methods(['GET'])
-def premium_products(request, account_id):
+def transactions(request, account_id):
+    """Get transactions async
+        Parameters:
+            account_id: (str)
+        Returns:
+            dict: Of all transactions for a given accout
+    """
+    cache_key = str(account_id) + 'transactions'
     context = {}
-    client = ClientSingleton().client
-    account_api = client.account_api(account_id)
-    context.update(utils.get_tranactions(account_api))
-    # context.update(utils.get_balance(account_api))
-    # context.update(utils.get_account_details(account_api))
+    if cache.get(cache_key):
+        context.update(cache.get(cache_key))
+    else:
+        client = ClientSingleton().client
+        account_api = client.account_api(account_id)
+        transactions_results = utils.get_tranactions.apply_async(args=[account_api]).get()
+        cache.set(cache_key, transactions_results)
+        context.update(transactions_results)
     context['account_id'] = account_id
-    return render(request, 'premium_products.html', context)
+    return render(request, 'transactions.html', context)
 
 
 @require_http_methods(['GET'])
 def balance(request, account_id):
-    #check cache
+    """Get balance async
+        Parameters:
+            account_id: (str)
+        Returns:
+            dict: Balance for a given account
+    """
+    cache_key = str(account_id) + 'balance'
     context = {}
-    client = ClientSingleton().client
-    account_api = client.account_api(account_id)
-    context.update(utils.get_balance(account_api))
+    if cache.get(cache_key):
+        context.update(cache.get(cache_key))
+    else:
+        client = ClientSingleton().client
+        account_api = client.account_api(account_id)
+        balance_results = utils.get_balance.apply_async(args=[account_api]).get()
+        cache.set(cache_key, balance_results)
+        context.update(balance_results)
     context['account_id'] = account_id
     return render(request, 'balance.html', context)
 
 
 @require_http_methods(['GET'])
 def account_details(request, account_id):
-    #check cache
+    """Get account details async
+        Parameters:
+            account_id: (str)
+        Returns:
+            dict: Of account details for a given account
+    """
+    cache_key = str(account_id) + 'account'
     context = {}
-    client = ClientSingleton().client
-    account_api = client.account_api(account_id)
-    context.update(utils.get_account_details(account_api))
+    if cache.get(cache_key):
+        context.update(cache.get(cache_key))
+    else:
+        client = ClientSingleton().client
+        account_api = client.account_api(account_id)
+        account = utils.get_account_details.apply_async(args=[account_api]).get()
+        context.update(account)
+        cache.set(cache_key, account)
     context['account_id'] = account_id
     return render(request, 'account_details.html', context)
 
 
 def page_not_found(request, *args, **kwargs):
+    """Default error page for demo purposes"""
     context = {}
-    context['error'] = kwargs['exception']
+    context['error_args'] = args
+    context['error'] = kwargs
     return render(request, '404.html', context)
-
-
-def random(request):
-    return render(request, 'random.html', context={})
-    #redirect straight from url?
-
-#redis + celery
-#cache
-#test
-#redme
-#github
