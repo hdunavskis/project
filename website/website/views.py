@@ -44,32 +44,36 @@ def authenticated(request, requisition_id=''):
     """
     context = {}
     client = ClientSingleton().client
-
-    if requisition_id:
-        client.requisition_id = requisition_id
-
-    if hasattr(client, 'requisition_id') and not client.requisition_id:
-        raise Http404('Requisition id is not set!')
-
     accounts = utils.get_accounts(client)
-    if accounts.get('status') != 'LN':
-        raise Http404('No accounts found! Authentication failed.')
+    if cache.get(str(accounts.get('id'))+'accounts'):
+        context['results'] = cache.get(str(accounts.get('id'))+'accounts')
+    else:
+        cache.set(str(accounts.get('id'))+'accounts', accounts)
 
-    for account in accounts.get('accounts'):
-        t_key = str(account) + 'transactions'
-        b_key = str(account) + 'balance'
-        a_key = str(account) + 'account'
-        account_api = client.account_api(account)
-        try:
-            transactions_results = utils.get_tranactions.apply_async(args=[account_api]).get()
-            balance_results = utils.get_balance.apply_async(args=[account_api]).get()
-            accounts_results = utils.get_account_details.apply_async(args=[account_api]).get()
-        except Exception as exc:
-            raise Http404('Error gathering premiums!') from exc
-        cache.set_many({t_key:transactions_results, b_key:balance_results,
-                        a_key:accounts_results}, timeout=900)
+        if requisition_id:
+            client.requisition_id = requisition_id
 
-    context['results'] = accounts
+        elif hasattr(client, 'requisition_id') and not client.requisition_id:
+            raise Http404('Requisition id is not set!')
+
+        if accounts.get('status') != 'LN':
+            raise Http404('No accounts found! Authentication failed.')
+
+        for account in accounts.get('accounts'):
+            t_key = str(account) + 'transactions'
+            b_key = str(account) + 'balance'
+            a_key = str(account) + 'account'
+            account_api = client.account_api(account)
+            try:
+                transactions_results = utils.get_tranactions.apply_async(args=[account_api]).get()
+                balance_results = utils.get_balance.apply_async(args=[account_api]).get()
+                accounts_results = utils.get_account_details.apply_async(args=[account_api]).get()
+            except Exception as exc:
+                raise Http404('Error gathering premiums!') from exc
+            cache.set_many({t_key:transactions_results, b_key:balance_results,
+                            a_key:accounts_results})
+
+        context['results'] = accounts
     return render(request, 'authenticated.html', context)
 
 
@@ -142,6 +146,6 @@ def account_details(request, account_id):
 def page_not_found(request, *args, **kwargs):
     """Default error page for demo purposes"""
     context = {}
-    context['error_args'] = args
-    context['error'] = kwargs
+    context['error_args'] = args if args else ''
+    context['error'] = kwargs['exception'] if 'exception' in kwargs else kwargs
     return render(request, '404.html', context)

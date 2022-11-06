@@ -3,7 +3,7 @@
 {% block title %}Premium Products{% endblock title %}
 
 {% block content %}
-
+<a href="{% url 'authenticated' %}"> Back to Accounts </a>
 <ul class="nav nav-tabs">
     <li class="nav-item">
         <a class="nav-link" aria-current="page" href="{% url 'transactions' account_id %}">Transactions</a>
