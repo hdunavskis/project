@@ -65,13 +65,13 @@ def authenticated(request, requisition_id=''):
             a_key = str(account) + 'account'
             account_api = client.account_api(account)
             try:
-                transactions_results = utils.get_tranactions.apply_async(args=[account_api]).get()
-                balance_results = utils.get_balance.apply_async(args=[account_api]).get()
-                accounts_results = utils.get_account_details.apply_async(args=[account_api]).get()
+                task_transactions = utils.get_tranactions.apply_async(args=[account_api])
+                task_balance = utils.get_balance.apply_async(args=[account_api])
+                task_accounts = utils.get_account_details.apply_async(args=[account_api])
             except Exception as exc:
                 raise Http404('Error gathering premiums!') from exc
-            cache.set_many({t_key:transactions_results, b_key:balance_results,
-                            a_key:accounts_results})
+            cache.set_many({t_key:task_transactions.get(), b_key:task_balance.get(),
+                            a_key:task_accounts.get()})
 
         context['results'] = accounts
     return render(request, 'authenticated.html', context)

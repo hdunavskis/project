@@ -1,11 +1,11 @@
 import os
 import threading
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 from nordigen import NordigenClient
 from requests.models import HTTPError
 from django.http import Http404
 
-load_dotenv()
+# load_dotenv()
 class ClientSingleton:
     """
     Class to create a Singleton instance for NordigenClient
@@ -31,8 +31,8 @@ class ClientSingleton:
             Exception: Http404 with a message
         """
         client = NordigenClient(
-            secret_id=os.getenv('SECRET_ID'),
-            secret_key=os.getenv('SECRET_KEY')
+            secret_id=os.getenv('NORDIGEN_SECRET_ID'),
+            secret_key=os.getenv('NORDIGEN_SECRET_KEY')
         )
         try:
             client.generate_token()
