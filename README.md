@@ -2,10 +2,22 @@
 The project includes official [**Nordigen Python**](https://github.com/nordigen/nordigen-python) library
 as well as [**Nordigen Bank UI**](https://github.com/nordigen/nordigen-bank-ui) library.
 
+## Information and Assumptions
+This project is for demonstration purposes only.  
+- All errors are handled as 404 for demonstration purposes  
+- The gathered data from APIs is cached and not stored in a database. The cache timeout value is set to 900s (5min)  
+- Basic user interface is in place to display the data 
+- The information displayed back to a user is randomly chosen  
+- Datatables is used to show the information, and no additional UI is used  
+- Account data is gathered asynchronously using celery  
+- The project includes 'Typehints'
+- Use localserver to run the project
+
 ## Requirements
-- Nordigen account to set up *__secret_id__* and *__secret_key__*
+- Nordigen account to set up *__secret_id__* and *__secret_key__*  
+- Access to Nordigen premium products
 - Python >=3.8
-- Reds-server
+- Redis-server
 
 ## Set up
 1. Create and set up an account with Nordigen and create *__secret id__* and *__secret key__*
