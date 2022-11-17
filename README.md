@@ -14,7 +14,7 @@ This project is for demonstration purposes only.
 - Use localserver to run the project
 
 ## Requirements
-- Nordigen account to set up *__secret_id__* and *__secret_key__*  
+- Nordigen account to set up *__NORDIGEN_SECRET_ID__*, *__NORDIGEN_SECRET_KEY__* and *__DJANGO_SECRET_KEY__*  
 - Access to Nordigen premium products
 - Python >=3.8
 - Redis-server

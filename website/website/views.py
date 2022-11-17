@@ -43,37 +43,37 @@ def authenticated(request, requisition_id=''):
             dict: Of available accounts
     """
     context = {}
+    accounts = None
     client = ClientSingleton().client
-    accounts = utils.get_accounts(client)
-    if cache.get(str(accounts.get('id'))+'accounts'):
-        context['results'] = cache.get(str(accounts.get('id'))+'accounts')
-    else:
-        cache.set(str(accounts.get('id'))+'accounts', accounts)
+    if requisition_id:
+        client.requisition_id = requisition_id
+        accounts = utils.get_accounts(client)
+    elif accounts is not None:
+        if cache.get(str(accounts.get('id'))+'accounts'):
+            context['results'] = cache.get(str(accounts.get('id'))+'accounts')
+        else:
+            cache.set(str(accounts.get('id'))+'accounts', accounts)
+            if hasattr(client, 'requisition_id') and not client.requisition_id:
+                raise Http404('Requisition id is not set!')
 
-        if requisition_id:
-            client.requisition_id = requisition_id
+            if accounts.get('status') != 'LN':
+                raise Http404('No accounts found! Authentication failed.')
 
-        elif hasattr(client, 'requisition_id') and not client.requisition_id:
-            raise Http404('Requisition id is not set!')
+            for account in accounts.get('accounts'):
+                t_key = str(account) + 'transactions'
+                b_key = str(account) + 'balance'
+                a_key = str(account) + 'account'
+                account_api = client.account_api(account)
+                try:
+                    task_transactions = utils.get_tranactions.apply_async(args=[account_api])
+                    task_balance = utils.get_balance.apply_async(args=[account_api])
+                    task_accounts = utils.get_account_details.apply_async(args=[account_api])
+                except Exception as exc:
+                    raise Http404('Error gathering premiums!') from exc
+                cache.set_many({t_key:task_transactions.get(), b_key:task_balance.get(),
+                                a_key:task_accounts.get()})
 
-        if accounts.get('status') != 'LN':
-            raise Http404('No accounts found! Authentication failed.')
-
-        for account in accounts.get('accounts'):
-            t_key = str(account) + 'transactions'
-            b_key = str(account) + 'balance'
-            a_key = str(account) + 'account'
-            account_api = client.account_api(account)
-            try:
-                task_transactions = utils.get_tranactions.apply_async(args=[account_api])
-                task_balance = utils.get_balance.apply_async(args=[account_api])
-                task_accounts = utils.get_account_details.apply_async(args=[account_api])
-            except Exception as exc:
-                raise Http404('Error gathering premiums!') from exc
-            cache.set_many({t_key:task_transactions.get(), b_key:task_balance.get(),
-                            a_key:task_accounts.get()})
-
-        context['results'] = accounts
+            context['results'] = accounts
     return render(request, 'authenticated.html', context)
 
 
