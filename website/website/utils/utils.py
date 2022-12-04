@@ -20,10 +20,10 @@ class URI(Enum):
     REDIRECT_ADDRESS = 'http://0.0.0.0:8000/authenticated/'
 
 
-def get_accounts(client:NordigenClient) -> Requisition:
+def get_accounts(client:NordigenClient, requisition_id:str) -> Requisition:
     accounts = None
     try:
-        accounts = client.requisition.get_requisition_by_id(client.requisition_id)
+        accounts = client.requisition.get_requisition_by_id(requisition_id)
     except HTTPError as response:
         raise Http404('Requisition was not created!') from response
         #log error

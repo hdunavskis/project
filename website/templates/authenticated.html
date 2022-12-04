@@ -11,9 +11,9 @@
                 </tr>
             </thead>
             <tbody>
-                {%for account in results.accounts%}
+                {%for account_id in results.accounts%}
                     <tr>    
-                        <td><a href="{% url 'transactions' account %}" style="text-decoration: none"> Account - {{forloop.counter}} </a></td>
+                        <td><a href="{% url 'transactions' account_id requisition_id %}" style="text-decoration: none"> Account - {{forloop.counter}}</a></td>
                     </tr>
                 {%endfor%}             
             </tbody>

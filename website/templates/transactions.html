@@ -3,17 +3,17 @@
 {% block title %}Premium Products{% endblock title %}
 
 {% block content %}
-<a href="{% url 'authenticated' %}"> Back to Accounts </a>
+<a href="{% url 'authenticated' requisition_id %}"> Back to Accounts </a>
 <ul class="nav nav-tabs">
     <li class="nav-item">
         <a class="nav-link active" aria-current="page" href='#'>Transactions</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link" href="{%url 'balance' account_id %}">Balance </a>
+        <a class="nav-link" href="{%url 'balance' account_id requisition_id %}">Balance </a>
     </li>
     <li class="nav-item">
-        <a class="nav-link" href="{% url 'account_details' account_id %}">Account Details </a>
-    </li>
+        <a class="nav-link" href="{% url 'account_details' account_id requisition_id %}">Account Details </a>
+    </li> 
 </ul><br>
 <div class='tab-content'>
     <div id='transactions'>

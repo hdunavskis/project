@@ -20,14 +20,14 @@ from . import views
 
 
 urlpatterns = [
-    path('', views.index, name='index'),
-    path('institute/<str:institute_id>/', views.requisition_create, name="requisition_create"),
-    path('authenticated/', views.authenticated, name="authenticated"),
-    path('authenticated/<str:requisition_id>', views.authenticated, name="authenticated"),
+    path('', views.HomeView.as_view(), name='index'),
+    path('institute/<str:institute_id>/', views.CreateRequisitionView.as_view(), name="requisition_create"),
+    path('authenticated/', views.AuthenticateView.as_view(), name="authenticated"),
+    path('authenticated/requisition_id:<str:requisition_id>', views.AuthenticateView.as_view(), name="authenticated"),
     path('random/', TemplateView.as_view(template_name='random.html'), name='random'),
-    path('transactions/<str:account_id>', views.transactions, name="transactions"),
-    path('balance/<str:account_id>', views.balance, name='balance'),
-    path('account_details/<str:account_id>', views.account_details, name='account_details'),
+    path('transactions/account_id:<str:account_id>/requisition_id:<str:requisition_id>', views.TransactionsView.as_view(), name="transactions"),
+    path('balance/<str:account_id>/requisition_id:<str:requisition_id>', views.BalanceView.as_view(), name='balance'),
+    path('account_details/<str:account_id>/requisition_id:<str:requisition_id>', views.AccountDetailsView.as_view(), name='account_details'),
     path('admin/', admin.site.urls),
 ]
 
